@@ -74,6 +74,15 @@ func New(svc *Service, addr string) (*Server, error) {
 
 	// api routes
 	mux.HandleFunc("/api/docs", ans.redocHandler)
+	mux.HandleFunc("/api/v1/jobs/summary", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			renderJSON(w, http.StatusMethodNotAllowed, apiError{Code: http.StatusMethodNotAllowed, Message: "Method not allowed"})
+
+			return
+		}
+
+		ans.apiJobsSummary(w, r)
+	})
 	mux.HandleFunc("/api/v1/jobs", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
@@ -543,6 +552,41 @@ func (s *Server) apiScrape(w http.ResponseWriter, r *http.Request) {
 	}
 
 	renderJSON(w, http.StatusCreated, ans)
+}
+
+type jobSummary struct {
+	ID       string    `json:"id"`
+	Name     string    `json:"name"`
+	Date     time.Time `json:"date"`
+	Status   string    `json:"status"`
+	Keywords int       `json:"keywords"`
+	Results  int       `json:"results"`
+}
+
+// apiJobsSummary returns a lightweight list of jobs for the dashboard table:
+// no keyword payloads, plus a live results-so-far count per job.
+func (s *Server) apiJobsSummary(w http.ResponseWriter, r *http.Request) {
+	jobs, err := s.svc.All(r.Context())
+	if err != nil {
+		renderJSON(w, http.StatusInternalServerError, apiError{Code: http.StatusInternalServerError, Message: err.Error()})
+
+		return
+	}
+
+	out := make([]jobSummary, 0, len(jobs))
+	for i := range jobs {
+		j := &jobs[i]
+		out = append(out, jobSummary{
+			ID:       j.ID,
+			Name:     j.Name,
+			Date:     j.Date,
+			Status:   j.Status,
+			Keywords: len(j.Data.Keywords),
+			Results:  s.svc.ResultsCount(j.ID),
+		})
+	}
+
+	renderJSON(w, http.StatusOK, out)
 }
 
 func (s *Server) apiGetJobs(w http.ResponseWriter, r *http.Request) {

@@ -6,8 +6,8 @@
     <title>Maps Scraper</title>
     <link rel="stylesheet" href="/static/css/main.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='18' font-size='18'>📍</text></svg>">
-    <script src="/static/js/htmx.min.js" defer></script>
     <script src="/static/js/app.js" defer></script>
+    <script src="/static/js/jobs.js" defer></script>
 </head>
 <body>
     <div class="app-container">
@@ -150,20 +150,36 @@
             </div>
 
             <div class="content">
-                <h2>Jobs <span class="spinner" id="spinner"></span></h2>
+                <div class="jobs-head">
+                    <h2>Jobs <span class="count-pill" id="jobs-total">0</span></h2>
+                    <div class="jobs-tools">
+                        <div class="jobs-search">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+                            <input type="text" id="jobs-search" placeholder="Search jobs…">
+                        </div>
+                        <select id="jobs-status" title="Filter by status">
+                            <option value="">All statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="working">Working</option>
+                            <option value="ok">Completed</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="jobs-statusbar" id="jobs-statusbar"></div>
                 <table id="job-table">
                     <thead>
                         <tr>
-                            <th>Job ID</th>
-                            <th>Name</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th class="sortable" data-sort="name">Name</th>
+                            <th class="sortable" data-sort="date">Date</th>
+                            <th class="sortable" data-sort="status">Status</th>
+                            <th class="sortable" data-sort="results">Progress</th>
+                            <th class="col-actions">Actions</th>
                         </tr>
                     </thead>
-                    <tbody hx-get="/jobs" hx-trigger="load, every 8s, refresh-jobs from:body">
-                    </tbody>
+                    <tbody id="jobs-body"></tbody>
                 </table>
+                <div class="pagination" id="jobs-pagination"></div>
             </div>
         </main>
     </div>

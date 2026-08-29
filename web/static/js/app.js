@@ -428,13 +428,13 @@
           batch = [];
           bar.style.width = Math.min(100, Math.round((idx / jobCount) * 100)) + "%";
           plabel.textContent = "Created " + fmt(posted) + " / " + fmt(jobCount) + " jobs" + (failed ? " · " + failed + " failed" : "");
-          if (window.htmx) htmx.trigger(document.body, "refresh-jobs");
+          document.body.dispatchEvent(new CustomEvent("refresh-jobs"));
         }
       }
       plabel.textContent = "Done — created " + fmt(posted) + " job(s)" + (failed ? ", " + failed + " failed" : "") + ".";
     } finally {
       btn.disabled = false; btn.textContent = "Create scraping jobs";
-      if (window.htmx) htmx.trigger(document.body, "refresh-jobs");
+      document.body.dispatchEvent(new CustomEvent("refresh-jobs"));
       setTimeout(() => prog.classList.remove("show"), 4000);
     }
   }

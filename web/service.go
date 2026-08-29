@@ -1,11 +1,14 @@
 package web
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"time"
 )
 
 type Service struct {
@@ -65,6 +68,61 @@ func (s *Service) csvPath(id string) (string, error) {
 	}
 
 	return filepath.Join(s.dataFolder, id+".csv"), nil
+}
+
+type countCache struct {
+	mod time.Time
+	n   int
+}
+
+var resultCounts sync.Map // job id -> countCache
+
+// ResultsCount returns how many result rows a job's CSV holds so far (header
+// excluded). It is cached by file modtime so repeated polling is cheap and only
+// re-reads a CSV that has actually grown.
+func (s *Service) ResultsCount(id string) int {
+	path, err := s.csvPath(id)
+	if err != nil {
+		return 0
+	}
+
+	fi, err := os.Stat(path)
+	if err != nil {
+		return 0
+	}
+
+	if v, ok := resultCounts.Load(id); ok {
+		if c, ok := v.(countCache); ok && c.mod.Equal(fi.ModTime()) {
+			return c.n
+		}
+	}
+
+	n := countCSVDataRows(path)
+	resultCounts.Store(id, countCache{mod: fi.ModTime(), n: n})
+
+	return n
+}
+
+func countCSVDataRows(path string) int {
+	f, err := os.Open(path)
+	if err != nil {
+		return 0
+	}
+	defer func() { _ = f.Close() }()
+
+	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 1024*1024), 16*1024*1024)
+
+	n := 0
+	for sc.Scan() {
+		n++
+	}
+
+	if n <= 1 {
+		return 0
+	}
+
+	return n - 1 // exclude header
 }
 
 func (s *Service) GetCSV(_ context.Context, id string) (string, error) {
