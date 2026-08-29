@@ -7,13 +7,6 @@
     "active": true
   },
   {
-    "id": "webshare",
-    "name": "Webshare",
-    "description": "Proxy provider with HTTP and SOCKS5 support.",
-    "referral_url": "https://www.webshare.io/?referral_code=0q3l81eet8mp",
-    "active": true
-  },
-  {
     "id": "birdproxies",
     "name": "BirdProxies",
     "description": "Residential and ISP proxy provider supporting the project.",
