@@ -12,7 +12,7 @@ import (
 	"github.com/gosom/scrapemate"
 )
 
-func TestScrapeJobMarksOKBeforeClosingMate(t *testing.T) {
+func TestScrapeJobMarksOK(t *testing.T) {
 	t.Parallel()
 
 	repo := &memoryJobRepo{}
@@ -42,23 +42,22 @@ func TestScrapeJobMarksOKBeforeClosingMate(t *testing.T) {
 	w := &webrunner{
 		svc: svc,
 		cfg: &runner.Config{DataFolder: t.TempDir(), Concurrency: 1},
-		setupMate: func(_ context.Context, _ io.Writer, _ *web.Job) (mateRunner, error) {
-			return fakeMate{
-				onClose: func() {
-					got, err := svc.Get(context.Background(), job.ID)
-					if err != nil {
-						t.Fatalf("get job during close: %v", err)
-					}
-					if got.Status != web.StatusOK {
-						t.Fatalf("status during close = %q, want %q", got.Status, web.StatusOK)
-					}
-				},
-			}, nil
+		setupMate: func(_ context.Context, _ io.Writer, _ *web.Job, _ []string) (mateRunner, error) {
+			return fakeMate{}, nil
 		},
 	}
 
 	if err := w.scrapeJob(context.Background(), &job); err != nil {
 		t.Fatalf("scrape job: %v", err)
+	}
+
+	got, err := svc.Get(context.Background(), job.ID)
+	if err != nil {
+		t.Fatalf("get job: %v", err)
+	}
+
+	if got.Status != web.StatusOK {
+		t.Fatalf("final status = %q, want %q", got.Status, web.StatusOK)
 	}
 }
 

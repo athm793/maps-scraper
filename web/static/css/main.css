@@ -244,6 +244,10 @@ details.section .section-body { padding: 0 var(--s3) var(--s3); }
 .prog { display: flex; flex-direction: column; gap: 4px; min-width: 150px; }
 .prog b { font-variant-numeric: tabular-nums; }
 .prog-muted { color: var(--faint); }
+.prog-warn, .prog-err { display: flex; align-items: center; gap: 5px; font-size: 11.5px; margin-top: 2px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prog-warn { color: var(--warn); }
+.prog-err { color: var(--danger); }
+.prog-warn svg, .prog-err svg { flex: 0 0 12px; }
 .pbar { height: 4px; border-radius: 100px; background: var(--surface-3); overflow: hidden; }
 .pbar i { display: block; height: 100%; border-radius: 100px; background: var(--primary); transition: width .4s ease; min-width: 2px; }
 .ibar { height: 3px; border-radius: 100px; background: var(--surface-3); overflow: hidden; }

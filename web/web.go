@@ -563,6 +563,7 @@ type jobSummary struct {
 	Results       int       `json:"results"`
 	SearchesDone  int       `json:"searches_done"`
 	SearchesTotal int       `json:"searches_total"`
+	Note          string    `json:"note"`
 }
 
 // apiJobsSummary returns a lightweight list of jobs for the dashboard table:
@@ -604,6 +605,7 @@ func (s *Server) apiJobsSummary(w http.ResponseWriter, r *http.Request) {
 			Results:       results,
 			SearchesDone:  done,
 			SearchesTotal: total,
+			Note:          j.Data.Note,
 		})
 	}
 

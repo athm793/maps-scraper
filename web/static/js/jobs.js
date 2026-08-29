@@ -60,13 +60,21 @@
     return rows;
   }
 
+  const WARN = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  function noteLine(j) {
+    if (!j.note) return "";
+    const cls = j.status === "failed" ? "prog-err" : "prog-warn";
+    return '<div class="' + cls + '" title="' + esc(j.note) + '">' + WARN + " " + esc(j.note) + "</div>";
+  }
+
   function progressCell(j) {
+    const note = noteLine(j);
     const total = j.searches_total || j.keywords || 0;
-    if (j.status === "pending") return '<span class="prog-muted">Queued · ' + fmt(total) + " searches</span>";
-    if (j.status === "failed") return '<span class="prog-muted">—</span>';
+    if (j.status === "pending") return '<span class="prog-muted">Queued · ' + fmt(total) + " searches</span>" + note;
+    if (j.status === "failed") return '<div class="prog"><span class="prog-muted">Failed</span>' + note + "</div>";
     if (j.status === "ok") {
       return '<div class="prog"><div><b>' + fmt(j.results) + "</b> results " +
-        '<span class="prog-muted">· ' + fmt(total) + " searches</span></div></div>";
+        '<span class="prog-muted">· ' + fmt(total) + " searches</span></div>" + note + "</div>";
     }
     // working: real progress = searches completed / total
     const done = j.searches_done || 0;
@@ -77,7 +85,7 @@
     const bar = started
       ? '<div class="pbar"><i style="width:' + pct + '%"></i></div>'
       : '<div class="ibar"><i></i></div>';
-    return '<div class="prog">' + line + bar + "</div>";
+    return '<div class="prog">' + line + bar + note + "</div>";
   }
 
   function actionsCell(j) {

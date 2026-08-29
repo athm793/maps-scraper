@@ -73,6 +73,7 @@ type JobData struct {
 	ExtraReviews bool          `json:"extra_reviews"`
 	MaxTime      time.Duration `json:"max_time"`
 	Proxies      []string      `json:"proxies"`
+	Note         string        `json:"note,omitempty"` // error / warning surfaced to the UI
 }
 
 func (d *JobData) Validate() error {
