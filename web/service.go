@@ -9,11 +9,35 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gosom/google-maps-scraper/exiter"
 )
 
 type Service struct {
 	repo       JobRepository
 	dataFolder string
+	progress   sync.Map // job id -> exiter.Exiter (only while running)
+}
+
+// SetJobProgress registers a running job's monitor so the dashboard can report
+// live search progress. ClearJobProgress removes it once the job finishes.
+func (s *Service) SetJobProgress(id string, e exiter.Exiter) { s.progress.Store(id, e) }
+
+func (s *Service) ClearJobProgress(id string) { s.progress.Delete(id) }
+
+// JobProgress returns the live counters for a running job, if it is running.
+func (s *Service) JobProgress(id string) (exiter.Progress, bool) {
+	v, ok := s.progress.Load(id)
+	if !ok {
+		return exiter.Progress{}, false
+	}
+
+	e, ok := v.(exiter.Exiter)
+	if !ok {
+		return exiter.Progress{}, false
+	}
+
+	return e.Snapshot(), true
 }
 
 func NewService(repo JobRepository, dataFolder string) *Service {

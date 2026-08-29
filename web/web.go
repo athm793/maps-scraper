@@ -555,12 +555,14 @@ func (s *Server) apiScrape(w http.ResponseWriter, r *http.Request) {
 }
 
 type jobSummary struct {
-	ID       string    `json:"id"`
-	Name     string    `json:"name"`
-	Date     time.Time `json:"date"`
-	Status   string    `json:"status"`
-	Keywords int       `json:"keywords"`
-	Results  int       `json:"results"`
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	Date          time.Time `json:"date"`
+	Status        string    `json:"status"`
+	Keywords      int       `json:"keywords"`
+	Results       int       `json:"results"`
+	SearchesDone  int       `json:"searches_done"`
+	SearchesTotal int       `json:"searches_total"`
 }
 
 // apiJobsSummary returns a lightweight list of jobs for the dashboard table:
@@ -576,13 +578,32 @@ func (s *Server) apiJobsSummary(w http.ResponseWriter, r *http.Request) {
 	out := make([]jobSummary, 0, len(jobs))
 	for i := range jobs {
 		j := &jobs[i]
+
+		total := len(j.Data.Keywords)
+		done := 0
+		results := s.svc.ResultsCount(j.ID)
+
+		if prog, ok := s.svc.JobProgress(j.ID); ok {
+			done = prog.SeedCompleted
+			if prog.SeedCount > 0 {
+				total = prog.SeedCount
+			}
+			if prog.PlacesFound > results {
+				results = prog.PlacesFound
+			}
+		} else if j.Status == StatusOK {
+			done = total
+		}
+
 		out = append(out, jobSummary{
-			ID:       j.ID,
-			Name:     j.Name,
-			Date:     j.Date,
-			Status:   j.Status,
-			Keywords: len(j.Data.Keywords),
-			Results:  s.svc.ResultsCount(j.ID),
+			ID:            j.ID,
+			Name:          j.Name,
+			Date:          j.Date,
+			Status:        j.Status,
+			Keywords:      len(j.Data.Keywords),
+			Results:       results,
+			SearchesDone:  done,
+			SearchesTotal: total,
 		})
 	}
 

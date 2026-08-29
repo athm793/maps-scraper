@@ -89,7 +89,32 @@ func (w *webrunner) Close(context.Context) error {
 	return nil
 }
 
+// resetOrphans re-queues jobs left in the "working" state by a previous process
+// (e.g. a restart). The runner only ever picks up pending jobs, so without this
+// an interrupted job would stay "working" forever and never finish.
+func (w *webrunner) resetOrphans(ctx context.Context) {
+	jobs, err := w.svc.All(ctx)
+	if err != nil {
+		log.Printf("reset orphans: %v", err)
+
+		return
+	}
+
+	for i := range jobs {
+		if jobs[i].Status != web.StatusWorking {
+			continue
+		}
+
+		jobs[i].Status = web.StatusPending
+		if err := w.svc.Update(ctx, &jobs[i]); err != nil {
+			log.Printf("reset orphan %s: %v", jobs[i].ID, err)
+		}
+	}
+}
+
 func (w *webrunner) work(ctx context.Context) error {
+	w.resetOrphans(ctx)
+
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
@@ -188,6 +213,10 @@ func (w *webrunner) scrapeJob(ctx context.Context, job *web.Job) error {
 
 	dedup := deduper.New()
 	exitMonitor := exiter.New()
+
+	// expose live progress to the dashboard while this job runs
+	w.svc.SetJobProgress(job.ID, exitMonitor)
+	defer w.svc.ClearJobProgress(job.ID)
 
 	seedJobs, err := runner.CreateSeedJobs(
 		job.Data.FastMode,

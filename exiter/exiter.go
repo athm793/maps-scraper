@@ -12,6 +12,15 @@ type Exiter interface {
 	IncrPlacesFound(int)
 	IncrPlacesCompleted(int)
 	Run(context.Context)
+	Snapshot() Progress
+}
+
+// Progress is a point-in-time view of a running job's counters.
+type Progress struct {
+	SeedCount       int `json:"seed_count"`
+	SeedCompleted   int `json:"seed_completed"`
+	PlacesFound     int `json:"places_found"`
+	PlacesCompleted int `json:"places_completed"`
 }
 
 type exiter struct {
@@ -78,6 +87,18 @@ func (e *exiter) IncrPlacesCompleted(val int) {
 		case e.doneCh <- struct{}{}:
 		default:
 		}
+	}
+}
+
+func (e *exiter) Snapshot() Progress {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	return Progress{
+		SeedCount:       e.seedCount,
+		SeedCompleted:   e.seedCompleted,
+		PlacesFound:     e.placesFound,
+		PlacesCompleted: e.placesCompleted,
 	}
 }
 

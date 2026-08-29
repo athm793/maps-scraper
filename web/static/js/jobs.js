@@ -61,12 +61,23 @@
   }
 
   function progressCell(j) {
-    if (j.status === "pending") return '<span class="prog-muted">Queued · ' + fmt(j.keywords) + " searches</span>";
+    const total = j.searches_total || j.keywords || 0;
+    if (j.status === "pending") return '<span class="prog-muted">Queued · ' + fmt(total) + " searches</span>";
     if (j.status === "failed") return '<span class="prog-muted">—</span>';
-    const found = '<b>' + fmt(j.results) + "</b> " + (j.status === "ok" ? "results" : "found");
-    const of = ' <span class="prog-muted">· ' + fmt(j.keywords) + " searches</span>";
-    if (j.status === "working") return '<div class="prog"><div>' + found + of + '</div><div class="ibar"><i></i></div></div>';
-    return '<div class="prog">' + found + of + "</div>";
+    if (j.status === "ok") {
+      return '<div class="prog"><div><b>' + fmt(j.results) + "</b> results " +
+        '<span class="prog-muted">· ' + fmt(total) + " searches</span></div></div>";
+    }
+    // working: real progress = searches completed / total
+    const done = j.searches_done || 0;
+    const pct = total ? Math.min(100, Math.round((done / total) * 100)) : 0;
+    const started = done > 0 || j.results > 0;
+    const line = '<div><b>' + fmt(done) + "</b> / " + fmt(total) + " searches " +
+      '<span class="prog-muted">· ' + fmt(j.results) + " found</span></div>";
+    const bar = started
+      ? '<div class="pbar"><i style="width:' + pct + '%"></i></div>'
+      : '<div class="ibar"><i></i></div>';
+    return '<div class="prog">' + line + bar + "</div>";
   }
 
   function actionsCell(j) {
