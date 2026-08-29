@@ -3,144 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Maps Scraper</title>
+    <title>Maps Scraper</title>
     <link rel="stylesheet" href="/static/css/main.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/1.9.6/htmx.min.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='18' font-size='18'>📍</text></svg>">
+    <script src="/static/js/htmx.min.js" defer></script>
+    <script src="/static/js/app.js" defer></script>
 </head>
 <body>
     <div class="app-container">
-        <header>
-            <h1>Google Maps Scraper</h1>
+        <header class="topbar">
+            <div class="brand">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Maps Scraper
+            </div>
+            <div class="spacer"></div>
             <nav>
-                <a href="/api/docs" target="_blank" rel="noopener noreferrer">API Documentation</a>
+                <a href="/api/docs" target="_blank" rel="noopener noreferrer">API</a>
             </nav>
-            <div class="github-section">
-                <p>If you find this tool useful, please consider starring our repository: </p>
-                <a href="https://github.com/gosom/google-maps-scraper" class="github-button">
-                <svg height="16" width="16" viewBox="0 0 16 16">
-                    <path fill="currentColor" d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/>
-                  </svg>
-                  Star on GitHub
-                </a>
-            </div>
-            <div id="sponsor-section" class="sponsor-section">
-    <button class="sponsor-close" onclick="hideSponsor()">
-        ×
-    </button>
-    <p class="sponsor-text">Support the ongoing maintenance and development of this project by becoming a sponsor. Your contribution helps ensure the tool's continued improvement and reliability.</p>
-    <a href="https://github.com/sponsors/gosom" class="sponsor-button" target="_blank" rel="noopener noreferrer">
-        <svg height="16" width="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M4.25 2.5C4.25 1.83696 4.67143 1.25 5.25 1.25C5.82857 1.25 6.25 1.83696 6.25 2.5C6.25 3.16304 5.82857 3.75 5.25 3.75C4.67143 3.75 4.25 3.16304 4.25 2.5ZM2.5 3.75C1.92143 3.75 1.5 3.16304 1.5 2.5C1.5 1.83696 1.92143 1.25 2.5 1.25C3.07857 1.25 3.5 1.83696 3.5 2.5C3.5 3.16304 3.07857 3.75 2.5 3.75ZM8 1.25C7.42143 1.25 7 1.83696 7 2.5C7 3.16304 7.42143 3.75 8 3.75C8.57857 3.75 9 3.16304 9 2.5C9 1.83696 8.57857 1.25 8 1.25ZM10.75 2.5C10.75 1.83696 11.1714 1.25 11.75 1.25C12.3286 1.25 12.75 1.83696 12.75 2.5C12.75 3.16304 12.3286 3.75 11.75 3.75C11.1714 3.75 10.75 3.16304 10.75 2.5ZM14.5 1.25C13.9214 1.25 13.5 1.83696 13.5 2.5C13.5 3.16304 13.9214 3.75 14.5 3.75C15.0786 3.75 15.5 3.16304 15.5 2.5C15.5 1.83696 15.0786 1.25 14.5 1.25ZM1.25 5.25C1.25 4.67143 1.83696 4.25 2.5 4.25C3.16304 4.25 3.75 4.67143 3.75 5.25C3.75 5.82857 3.16304 6.25 2.5 6.25C1.83696 6.25 1.25 5.82857 1.25 5.25ZM5.25 4.25C4.67143 4.25 4.25 4.67143 4.25 5.25C4.25 5.82857 4.67143 6.25 5.25 6.25C5.82857 6.25 6.25 5.82857 6.25 5.25C6.25 4.67143 5.82857 4.25 5.25 4.25ZM7 5.25C7 4.67143 7.42143 4.25 8 4.25C8.57857 4.25 9 4.67143 9 5.25C9 5.82857 8.57857 6.25 8 6.25C7.42143 6.25 7 5.82857 7 5.25ZM11.75 4.25C11.1714 4.25 10.75 4.67143 10.75 5.25C10.75 5.82857 11.1714 6.25 11.75 6.25C12.3286 6.25 12.75 5.82857 12.75 5.25C12.75 4.67143 12.3286 4.25 11.75 4.25ZM13.5 5.25C13.5 4.67143 13.9214 4.25 14.5 4.25C15.0786 4.25 15.5 4.67143 15.5 5.25C15.5 5.82857 15.0786 6.25 14.5 6.25C13.9214 6.25 13.5 5.82857 13.5 5.25ZM2.5 7.25C1.83696 7.25 1.25 7.67143 1.25 8.25C1.25 8.82857 1.83696 9.25 2.5 9.25C3.16304 9.25 3.75 8.82857 3.75 8.25C3.75 7.67143 3.16304 7.25 2.5 7.25ZM4.25 8.25C4.25 7.67143 4.67143 7.25 5.25 7.25C5.82857 7.25 6.25 7.67143 6.25 8.25C6.25 8.82857 5.82857 9.25 5.25 9.25C4.67143 9.25 4.25 8.82857 4.25 8.25ZM8 7.25C7.42143 7.25 7 7.67143 7 8.25C7 8.82857 7.42143 9.25 8 9.25C8.57857 9.25 9 8.82857 9 8.25C9 7.67143 8.57857 7.25 8 7.25ZM10.75 8.25C10.75 7.67143 11.1714 7.25 11.75 7.25C12.3286 7.25 12.75 7.67143 12.75 8.25C12.75 8.82857 12.3286 9.25 11.75 9.25C11.1714 9.25 10.75 8.82857 10.75 8.25ZM14.5 7.25C13.9214 7.25 13.5 7.67143 13.5 8.25C13.5 8.82857 13.9214 9.25 14.5 9.25C15.0786 9.25 15.5 8.82857 15.5 8.25C15.5 7.67143 15.0786 7.25 14.5 7.25Z" fill="currentColor"/>
-        </svg>
-        Sponsor on GitHub
-    </a>
-</div>
-
+            <button id="theme-toggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">
+                <svg class="i-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            </button>
         </header>
-        <main>
-            <div class="sidebar">
-                <div id="error-container" class="error-message"></div>
-                <form 
-                    hx-post="/scrape" 
-                    hx-target="#job-table tbody" 
-                    hx-swap="beforeend"
-                    hx-indicator="#spinner"
-                    hx-on::before-request="document.getElementById('error-container').innerHTML = ''"
-                    hx-on::after-request="if(!event.detail.successful) document.getElementById('error-container').innerHTML = event.detail.xhr.responseText"
-                >
-                    
-                    <fieldset>
-                        <legend>Job Details</legend>
-                        <div class="form-group">
-                            <label for="name">Job Name:</label>
-                            <input type="text" id="name" name="name" value="{{.Name}}">
-                        </div>
-                        <div class="form-group">
-                            <label for="keywords">Keywords:</label>
-                            <textarea id="keywords" name="keywords" rows="10">{{ .KeywordsString }}</textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="lang">Language:</label>
-                            <input type="text" id="lang" name="lang" value="{{.Language}}">
-                        </div>
-                    </fieldset>
-                    
-                    <details class="expandable-section">
-                        <summary>Location Settings</summary>
-                        <fieldset>
-                            <div class="form-group">
-                                <label for="zoom">Zoom:</label>
-                                <input type="number" id="zoom" name="zoom" value="{{.Zoom}}">
-                            </div>
-                            <div class="form-group">
-                                <label for="latitude">Latitude:</label>
-                                <input type="number" step="0.000000000000001" id="latitude" name="latitude" value="{{.Lat}}">
-                            </div>
-                            <div class="form-group">
-                                <label for="longitude">Longitude:</label>
-                                <input type="number" step="0.000000000000001" id="longitude" name="longitude" value="{{.Lon}}">
-                            </div>
-                        </fieldset>
-                    </details>
-                    
-                    <details class="expandable-section">
-                        <summary>Advanced Options</summary>
-                        <fieldset>
-                            <div class="form-group">
-                                <label for="fastmode">Fast Mode (BETA):</label>
-                                <input type="checkbox" id="fastmode" name="fastmode" {{if .FastMode}}checked{{end}}>
-                            </div>
-                            <div class="form-group">
-                                    <label for="radius">Radius (BETA):</label>
-                                    <input type="number" id="radius" name="radius" value="{{.Radius}}">
-                            </div>
-                            <div class="form-group">
-                                <label for="depth">Depth:</label>
-                                <input type="number" step="1" id="depth" name="depth" value="{{.Depth}}">
-                            </div>
-                            <div class="form-group checkbox">
-                                <input type="checkbox" id="email" name="email" {{if .Email}}checked{{end}}>
-                                <label for="email">Fetch Emails</label>
-                            </div>
-                            <div class="form-group">
-                                <label for="maxtime">Max job time:</label>
-                                <input type="text" id="maxtime" name="maxtime" value="{{.MaxTime}}">
-                            </div>
-                        </fieldset>
-                    </details>
-                    <details class="expandable-section">
-                        <summary>Proxies</summary>
-                        <fieldset>
-                            <div class="form-group">
-                                <label for="proxies">Proxies:(one per line)</label>
-                                <p class="text-muted"><small>Examples:<br>
-                                        <p>HTTPS proxy with username/password: https://username:password@myproxy.local:443<p>
-                                        <p>HTTP proxy with username/password: http://username:password@myproxy.local:443<p>
-                                        <p>SOCKS5 proxy without auth: socks5://127.0.0.1:8000</p>
-                                </p>
 
-                                <textarea id="proxies" name="proxies" rows="5">{{.ProxiesString}}</textarea>
+        <main class="workspace">
+            <div class="builder">
+                <div id="error-container" class="error-message"></div>
+
+                <label class="field">
+                    <span>Job name</span>
+                    <input type="text" id="job-name" placeholder="e.g. Dentists worldwide">
+                </label>
+
+                <!-- Categories -->
+                <section class="card">
+                    <div class="card-head">Categories <span class="count-pill" id="cat-count">0</span></div>
+                    <div class="card-body">
+                        <input type="text" id="cat-search" placeholder="Search categories…">
+                        <div class="picker-tools">
+                            <button type="button" class="btn btn-sm" id="cat-add-shown">Add all shown</button>
+                            <button type="button" class="btn btn-sm btn-ghost" id="cat-clear">Clear</button>
+                        </div>
+                        <ul class="option-list" id="cat-list"></ul>
+                        <div class="chips" id="cat-chips"><span class="empty">No categories selected</span></div>
+                    </div>
+                </section>
+
+                <!-- Locations -->
+                <section class="card">
+                    <div class="card-head">Locations <span class="count-pill" id="loc-count">0</span></div>
+                    <div class="card-body">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px">
+                            <div class="seg" id="granularity" role="tablist">
+                                <button type="button" data-g="city" class="active">By city</button>
+                                <button type="button" data-g="postal">By postal code</button>
                             </div>
-                        </fieldset>
-                    </details>
-                    
-                    <button type="submit">Start Scraping</button>
-                </form>
+                        </div>
+                        <div class="picker-tools">
+                            <button type="button" class="btn btn-sm" id="loc-all-countries">Select all countries</button>
+                            <button type="button" class="btn btn-sm btn-ghost" id="loc-clear">Clear</button>
+                        </div>
+                        <input type="text" id="country-search" placeholder="Search countries…">
+                        <div class="tree" id="country-tree" style="margin-top:8px"></div>
+                        <div class="chips" id="loc-chips"><span class="empty">No locations selected</span></div>
+                    </div>
+                </section>
+
+                <!-- Summary -->
+                <section class="summary">
+                    <div class="big"><span id="s-cats">0</span><span class="x">×</span><span id="s-locs">0</span></div>
+                    <div class="sub"><b id="s-total">0</b> total searches <span id="s-gran">(city)</span></div>
+                    <div class="split-row">
+                        <label for="chunk">Searches per job</label>
+                        <input type="number" id="chunk" value="1000" min="1" step="100">
+                        <span class="jobs-estimate">≈ <b id="s-jobs">0</b> jobs</span>
+                    </div>
+                </section>
+
+                <!-- Scrape settings -->
+                <details class="section">
+                    <summary><svg class="twist" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg> Scrape settings</summary>
+                    <div class="section-body">
+                        <div class="row-2">
+                            <label class="field"><span>Language</span>
+                                <select id="lang">
+                                    <option value="en" selected>English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="it">Italian</option>
+                                    <option value="pt">Portuguese</option>
+                                    <option value="nl">Dutch</option>
+                                    <option value="ru">Russian</option>
+                                    <option value="ja">Japanese</option>
+                                    <option value="zh">Chinese</option>
+                                    <option value="ar">Arabic</option>
+                                    <option value="hi">Hindi</option>
+                                </select>
+                            </label>
+                            <label class="field"><span>Depth (max results / search)</span>
+                                <input type="number" id="depth" value="20" min="1" step="1">
+                            </label>
+                        </div>
+                        <label class="check" style="margin-bottom:12px"><input type="checkbox" id="email"> Extract emails from websites <span class="hint" style="margin:0"> (slower)</span></label>
+                        <details class="section" style="margin:0">
+                            <summary><svg class="twist" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg> Geo &amp; advanced</summary>
+                            <div class="section-body">
+                                <label class="check" style="margin-bottom:12px"><input type="checkbox" id="fastmode"> Fast mode (needs lat/lon below)</label>
+                                <div class="row-2">
+                                    <label class="field"><span>Zoom (0–21)</span><input type="number" id="zoom" value="15" min="0" max="21"></label>
+                                    <label class="field"><span>Radius (m)</span><input type="number" id="radius" value="10000"></label>
+                                </div>
+                                <div class="row-2">
+                                    <label class="field"><span>Latitude</span><input type="text" id="latitude" value="0"></label>
+                                    <label class="field"><span>Longitude</span><input type="text" id="longitude" value="0"></label>
+                                </div>
+                                <label class="field" style="margin:0"><span>Max time per job (minutes)</span><input type="number" id="maxtime" value="30" min="3"></label>
+                            </div>
+                        </details>
+                    </div>
+                </details>
+
+                <!-- Proxies -->
+                <details class="section">
+                    <summary><svg class="twist" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg> Proxies</summary>
+                    <div class="section-body">
+                        <textarea id="proxies" rows="5" placeholder="One per line&#10;http://user:pass@host:port&#10;socks5://127.0.0.1:9050"></textarea>
+                        <p class="hint">Leave empty to use the pool the server was started with (<code>-proxies-file</code>). Pasting here overrides it for these jobs.</p>
+                    </div>
+                </details>
+
+                <!-- Query preview -->
+                <details class="section">
+                    <summary><svg class="twist" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg> Preview generated queries</summary>
+                    <div class="section-body">
+                        <button type="button" class="btn btn-sm" id="preview-btn">Show sample</button>
+                        <textarea id="preview" rows="6" style="margin-top:8px" placeholder="A sample of the search queries that will be created appears here." readonly></textarea>
+                    </div>
+                </details>
+
+                <div class="progress" id="progress">
+                    <div class="bar"><i id="progress-bar"></i></div>
+                    <div class="label" id="progress-label"></div>
+                </div>
+
+                <button type="button" id="create-btn" class="btn btn-primary btn-lg btn-block">Create scraping jobs</button>
             </div>
+
             <div class="content">
-                <div id="spinner" class="spinner"></div>
+                <h2>Jobs <span class="spinner" id="spinner"></span></h2>
                 <table id="job-table">
                     <thead>
                         <tr>
                             <th>Job ID</th>
-                            <th>Job Name</th>
-                            <th>Job Date</th>
+                            <th>Name</th>
+                            <th>Date</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody hx-get="/jobs" hx-trigger="load, every 10s">
-                        <!-- Job rows will be inserted here by HTMX -->
+                    <tbody hx-get="/jobs" hx-trigger="load, every 8s, refresh-jobs from:body">
                     </tbody>
                 </table>
             </div>
@@ -148,13 +169,5 @@
     </div>
 
     <div id="map-modal-container"></div>
-<script>
-function hideSponsor() {
-    const sponsorSection = document.getElementById('sponsor-section');
-    if (sponsorSection) {
-        sponsorSection.style.display = 'none';
-    }
-}
-</script>
 </body>
 </html>

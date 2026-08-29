@@ -1,0 +1,12 @@
+# Fast, reliable fork build: compile the forked binary, then drop it onto the
+# official image which already ships Chromium + Playwright + system libs.
+FROM golang:1.26.6-trixie AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -ldflags="-w -s" -o /usr/bin/google-maps-scraper
+
+FROM gosom/google-maps-scraper:latest
+COPY --from=builder /usr/bin/google-maps-scraper /usr/bin/google-maps-scraper
+ENTRYPOINT ["google-maps-scraper"]

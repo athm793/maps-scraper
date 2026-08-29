@@ -1,3 +1,33 @@
+# Maps Scraper (fork)
+
+A private fork of [gosom/google-maps-scraper](https://github.com/gosom/google-maps-scraper) with:
+
+- **Ads/sponsor UI removed** (no "star"/"sponsor" sections, no ⭐/💖 startup banner).
+- **Redesigned web UI** — theme-aware light/dark, clean two-panel layout, htmx vendored locally.
+- **Built-in worldwide pickers** — choose from 4,038 Google Business Profile categories and
+  worldwide locations (121 countries → regions → cities → postal codes, from GeoNames). Pick any
+  mix, toggle city vs postal granularity, see a live search count, and large selections **auto-split
+  into multiple jobs** via the API. Data lives under `web/static/data/` (regenerate with
+  `node scripts/build-data.js`).
+
+## Build & run
+
+The upstream `Dockerfile` rebuilds Chromium from scratch (slow/flaky). Use **`Dockerfile.fork`**,
+which compiles the binary onto the official image that already ships Chromium + Playwright:
+
+```bash
+docker build -f Dockerfile.fork -t gmaps-scraper-fork:latest .
+docker run -d --name gmaps-scraper -p 8080:8080 \
+  -v "$PWD/data:/gmapsdata" \
+  gmaps-scraper-fork:latest -web -data-folder /gmapsdata -c 10
+```
+
+Then open http://localhost:8080. Add `-proxies-file /gmapsdata/proxies.txt` to use a proxy pool.
+
+---
+
+<sub>Upstream documentation follows.</sub>
+
 # Google Maps Scraper
 
 <p align="center">
