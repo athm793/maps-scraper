@@ -149,7 +149,7 @@
     syncSummary();
   }
 
-  function chkbox(sel) { return '<span class="chk">' + (sel ? CHK : "") + "</span>"; }
+  function chkbox(sel, extra) { return '<span class="chk' + (sel ? " on" : "") + (extra ? " " + extra : "") + '">' + (sel ? CHK : "") + "</span>"; }
 
   function renderCountryTree() {
     const q = $("country-search").value.trim().toLowerCase();
@@ -161,10 +161,11 @@
       const sel = hasCountryScope(c.c);
       const isOpen = open.has(c.c);
       let html = '<div class="country-node ' + (isOpen ? "open" : "") + '" data-cc="' + c.c + '">';
-      html += '<div class="tree-row country">' + TWIST +
+      html += '<div class="tree-row country">' +
+        chkbox(sel, "sel-country") +
+        TWIST +
         '<span class="ctry-label" style="font-weight:550">' + esc(c.n) + "</span>" +
-        '<span class="meta">' + fmt(c.cities) + " cities</span>" +
-        '<span class="chk sel-country" title="Select entire country" style="margin-left:8px">' + (sel ? CHK : "") + "</span></div>";
+        '<span class="meta">' + fmt(c.cities) + " cities</span></div>";
       html += '<div class="country-children" style="' + (isOpen ? "" : "display:none") + '"></div></div>';
       return html;
     }).join("");
@@ -178,16 +179,14 @@
     let doc;
     try { doc = await ensureLoc(cc); } catch (e) { children.innerHTML = '<div class="tree-loading">Failed to load.</div>'; return; }
     const cnts = countryCounts(cc);
-    let html = '<div class="tree-search"><input type="text" placeholder="Filter cities in ' + esc(doc.n) + '…" data-cc="' + cc + '"></div>';
-    html += '<div class="tree-row region" data-whole="1">' + '<span style="width:14px"></span>' +
-      '<span>Entire country</span><span class="meta">' + fmt(cnts.cities) + " cities · " + fmt(cnts.zips) + " zips</span>" +
-      '<span class="chk" style="margin-left:8px">' + (hasCountryScope(cc) ? CHK : "") + "</span></div>";
+    let html = '<div class="tree-hint">Tick a box to select the whole country or a whole state; click a name to open it.</div>';
+    html += '<div class="tree-search"><input type="text" placeholder="Filter cities in ' + esc(doc.n) + '…" data-cc="' + cc + '"></div>';
     html += doc.a.map((r, ri) => {
       const rsel = hasRegionScope(cc, r.c) || hasCountryScope(cc);
       return '<div class="region-node" data-rc="' + esc(r.c) + '" data-ri="' + ri + '">' +
-        '<div class="tree-row region">' + TWIST + '<span>' + esc(rname(r.n)) + '</span>' +
-        '<span class="meta">' + fmt(r.ct.length) + "</span>" +
-        '<span class="chk sel-region" title="Select entire region" style="margin-left:8px">' + (rsel ? CHK : "") + "</span></div>" +
+        '<div class="tree-row region">' + chkbox(rsel, "sel-region") + TWIST +
+        '<span>' + esc(rname(r.n)) + '</span>' +
+        '<span class="meta">' + fmt(r.ct.length) + "</span></div>" +
         '<div class="region-children" style="display:none"></div></div>';
     }).join("");
     children.innerHTML = html;
@@ -253,14 +252,6 @@
       if (selC) {
         e.stopPropagation();
         const cc = selC.closest(".country-node").getAttribute("data-cc");
-        const c = state.countries.find((x) => x.c === cc);
-        toggleScope({ type: "country", cc, cn: c.n });
-        return;
-      }
-      // whole-country row inside expansion
-      const wholeRow = e.target.closest('.tree-row.region[data-whole="1"]');
-      if (wholeRow) {
-        const cc = wholeRow.closest(".country-node").getAttribute("data-cc");
         const c = state.countries.find((x) => x.c === cc);
         toggleScope({ type: "country", cc, cn: c.n });
         return;
